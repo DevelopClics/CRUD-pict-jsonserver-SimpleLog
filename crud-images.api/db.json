@@ -1,0 +1,41 @@
+{
+  "user": [
+    {
+      "id": "admin",
+      "name": "Julien",
+      "password": "12345Abc"
+    }
+  ],
+  "products": [
+    {
+      "name": "Floriane PEVERELLI",
+      "brand": "La pomme d'Happy",
+      "category": "Phones",
+      "price": "1.02",
+      "description": "Pom Pom Pom Pom",
+      "imageFilename": "1750318890043_1750316689880_2025-06-28-soireIÌÂe-jeux-video-web.jpg",
+      "createdAt": "2025-06-19T07:41:30.046Z",
+      "id": 2
+    },
+    {
+      "name": "Brunch G",
+      "brand": "DEDC",
+      "category": "Accessories",
+      "price": "50",
+      "description": "Ca va bruncher Ho hé Ho hé",
+      "imageFilename": "1750659042237_2025-05-25-brunch-72.jpg",
+      "createdAt": "2025-06-23T06:10:42.247Z",
+      "id": 3
+    },
+    {
+      "name": "Le toutan1",
+      "brand": "DEDC",
+      "category": "Computers",
+      "price": "60",
+      "description": "Ce Imac est un ordinateur tou en un",
+      "imageFilename": "1750938692068_2025-05-to-2025-10-marcheÌ-des-producteurs-72.jpg",
+      "createdAt": "2025-06-26T11:51:32.072Z",
+      "id": 4
+    }
+  ]
+}

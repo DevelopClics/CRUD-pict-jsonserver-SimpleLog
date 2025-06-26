@@ -1,0 +1,14 @@
+# Node
+node_modules/
+crud-images/node_modules/
+crud-images.api/node_modules/
+
+# Build
+client/build/
+server/dist/
+
+# Env
+*.env
+
+# Logs
+*.log
