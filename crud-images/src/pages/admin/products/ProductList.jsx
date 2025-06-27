@@ -3,9 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);
-
+  const API_URL = import.meta.env.VITE_API_URL;
+  console.log("API_URL =", API_URL); // Pour tester si elle est bien lue
   function getProducts() {
-    fetch("http://localhost:3004/products?_sort=id&_order=desc")
+    fetch(`${API_URL}/products?_sort=id&_order=desc`)
       .then((response) => {
         if (response.ok) {
           return response.json();

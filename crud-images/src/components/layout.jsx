@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/logo-dedc-sm-dark.svg";
 
 export function Navbar() {
   // DEBUT LOGOUT
@@ -16,12 +17,7 @@ export function Navbar() {
     <nav className="navbar navbar-expand-lg bg-white border-bottom box-shadow">
       <div className="container">
         <Link className="navbar-brand" to="/">
-          <img
-            src="/logo-dedc-sm-dark.svg"
-            alt="..."
-            width="30"
-            className="me-2"
-          />{" "}
+          <img src={logo} alt="..." width="30" className="me-2" />
           La Boutik à Klaps
         </Link>
         <button
@@ -93,8 +89,7 @@ export function Navbar() {
 export function Footer() {
   return (
     <div className="text-center p-4 border-top">
-      <img src="/logo-dedc-sm-dark.svg" alt="..." width="30" className="me-2" />
-      La Boutik à Klaps
+      <img src={logo} alt="..." width="30" className="me-2" /> La Boutik à Klaps
     </div>
   );
 }

@@ -6,8 +6,11 @@ export default function EditProduct() {
   const [initialData, setInitialData] = useState();
   const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
+  console.log("API_URL =", API_URL); // Pour tester si elle est bien lue
+
   function getProduct() {
-    fetch("http://localhost:3004/products/" + params.id)
+    fetch(`${API_URL}/products/` + params.id)
       .then((response) => {
         if (response.ok) {
           return response.json();

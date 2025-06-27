@@ -6,6 +6,8 @@ export default function Login() {
   const [password, passwordupdate] = useState("");
 
   const usenavigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
+  console.log("API_URL =", API_URL); // Pour tester si elle est bien lue
 
   useEffect(() => {
     sessionStorage.clear();
@@ -15,7 +17,7 @@ export default function Login() {
     e.preventDefault();
     if (validate()) {
       console.log("proceed");
-      fetch("http://localhost:3004/user/" + username)
+      fetch(`${API_URL}/user/` + username)
         .then((res) => {
           return res.json();
         })

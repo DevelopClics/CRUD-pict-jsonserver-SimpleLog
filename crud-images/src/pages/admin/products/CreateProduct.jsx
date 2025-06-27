@@ -5,6 +5,8 @@ export default function CreateProduct() {
   const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+  console.log("API_URL =", API_URL); // Pour tester si elle est bien lue
   // Soumission du formulaire
   async function handleSubmit(event) {
     event.preventDefault();
@@ -25,10 +27,14 @@ export default function CreateProduct() {
     }
 
     try {
-      const response = await fetch("http://localhost:3004/products", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${API_URL}/products`,
+        // `http://localhost:3004/products`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await response.json();
 
