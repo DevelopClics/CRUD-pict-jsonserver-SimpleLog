@@ -45,13 +45,10 @@ export default function EditProduct() {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:3004/products/" + params.id,
-        {
-          method: "PATCH",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${API_URL}/products/` + params.id, {
+        method: "PATCH",
+        body: formData,
+      });
 
       const data = await response.json();
 
@@ -162,10 +159,7 @@ export default function EditProduct() {
               <div className="row mb-3">
                 <div className="offset-sm-4  col-sm-8">
                   <img
-                    src={
-                      "http://localhost:3004/images/" +
-                      initialData.imageFilename
-                    }
+                    src={`${API_URL}images/` + initialData.imageFilename}
                     width="150"
                     alt="…"
                   />

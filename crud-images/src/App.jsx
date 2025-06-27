@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Footer, Navbar } from "./components/layout";
 import { ToastContainer } from "react-toastify";
 import Home from "./pages/Home";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import ProductList from "./pages/admin/products/ProductList";
@@ -17,7 +17,7 @@ function App() {
   return (
     <>
       <ToastContainer theme="colored"></ToastContainer>
-      <BrowserRouter>
+      <HashRouter>
         <Navbar />
         <Routes>
           <Route element={<PrivateRoutes />}>
@@ -34,7 +34,7 @@ function App() {
         </Routes>
 
         <Footer />
-      </BrowserRouter>
+      </HashRouter>
     </>
   );
 }

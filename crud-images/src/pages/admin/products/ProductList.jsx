@@ -23,7 +23,7 @@ export default function ProductList() {
 
   useEffect(getProducts, []);
   function deleteProduct(id) {
-    fetch("http://localhost:3004/products/" + id, {
+    fetch(`${API_URL}/products/` + id, {
       method: "DELETE",
     })
       .then((response) => {
@@ -93,9 +93,7 @@ export default function ProductList() {
 
                   <td>
                     <img
-                      src={
-                        "http://localhost:3004/images/" + product.imageFilename
-                      }
+                      src={`${API_URL}/images/` + product.imageFilename}
                       width="100"
                       alt="..."
                     />
