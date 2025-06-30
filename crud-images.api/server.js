@@ -1,90 +1,104 @@
 const jsonServer = require("json-server");
-// npm i multer pour personnaliser le bodyparser
 const multer = require("multer");
 
 const server = jsonServer.create();
 const router = jsonServer.router("db.json");
-const middlewares = jsonServer.defaults();
 
-// Set default middlewares (logger, static, cors and no-cache)
+// Middleware JSON Server avec options CORS (remplace cors() séparé)
+const middlewares = jsonServer.defaults({
+  static: "public",
+  cors: {
+    origin: "https://developclics.github.io", // autorise ton front GitHub Pages
+    credentials: true,
+  },
+});
+
 server.use(middlewares);
 
-//Utilisation de multer pour utiliser le diskstorage et on le modifie
+// Multer setup pour upload d'images
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination(req, file, cb) {
     cb(null, "public/images");
   },
-  filename: function (req, file, cb) {
-    // const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    // Ajout de code
-    let date = new Date();
-    let imageFilename = date.getTime() + "_" + file.originalname;
-    req.body.imageFilename = imageFilename;
-    //
+  filename(req, file, cb) {
+    const imageFilename = Date.now() + "_" + file.originalname;
     cb(null, imageFilename);
   },
 });
 
-const bodyParser = multer({ storage: storage }).any();
-// ----------------------
+const upload = multer({ storage });
+const bodyParser = upload.fields([{ name: "image", maxCount: 1 }]);
 
-// Add custom routes before JSON Server router
-// server.get('/echo', (req, res) => {
-//   res.jsonp(req.query)
-// })
+// Validation produit (identique)
+function validateProduct(body) {
+  let errors = {};
+  if (!body.name || body.name.length < 2)
+    errors.name = "Il devrait y avoir un minimum de 2 caractères";
+  if (!body.brand || body.brand.length < 2)
+    errors.brand = "Il devrait y avoir un minimum de 2 caractères";
+  if (!body.category || body.category.length < 2)
+    errors.category = "Il devrait y avoir un minimum de 2 caractères";
+  if (!body.price || Number(body.price) <= 0)
+    errors.price = "Le prix n'est pas valide";
+  if (!body.description || body.description.length < 10)
+    errors.description = "Il devrait y avoir au moins 10 caractères";
+  return errors;
+}
 
-// To handle POST, PUT and PATCH you need to use a body-parser
-// You can use the one used by JSON Server
+// POST /products
+server.post("/products", bodyParser, (req, res, next) => {
+  if (!req.body) {
+    return res
+      .status(400)
+      .json({ error: "Corps de requête vide ou mal formé" });
+  }
 
-// modif de use par post + ajout de la route
-server.use(bodyParser);
-server.post("/products", (req, res, next) => {
-  //   if (req.method === "POST") {
-  //     req.body.createdAt = Date.now();
-  //   }
-  let date = new Date();
-  req.body.createdAt = date.toISOString();
+  req.body.createdAt = new Date().toISOString();
+
+  if (req.files && req.files.image && req.files.image.length > 0) {
+    req.body.imageFilename = req.files.image[0].filename;
+  }
+
+  req.body.price = Number(req.body.price);
+
+  const errors = validateProduct(req.body);
+
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).jsonp(errors);
+  }
+
+  next();
+});
+
+// PATCH /products/:id
+server.patch("/products/:id", bodyParser, (req, res, next) => {
+  if (!req.body) {
+    return res
+      .status(400)
+      .json({ error: "Corps de requête vide ou mal formé" });
+  }
+
+  if (req.files && req.files.image && req.files.image.length > 0) {
+    req.body.imageFilename = req.files.image[0].filename;
+  }
+
   if (req.body.price) {
     req.body.price = Number(req.body.price);
   }
 
-  // implementation de validation
-  let hasErrors = false;
-  let errors = {};
+  const errors = validateProduct(req.body);
 
-  if (req.body.name.length < 2) {
-    hasErrors = true;
-    errors.name = "Il devrait y avoir un minimum de 2 caractères";
-  }
-  if (req.body.brand.length < 2) {
-    hasErrors = true;
-    errors.brand = "Il devrait y avoir un minimum de 2 caractères";
-  }
-  if (req.body.category.length < 2) {
-    hasErrors = true;
-    errors.category = "Il devrait y avoir un minimum de 2 caractères";
-  }
-  if (req.body.price <= 0) {
-    hasErrors = true;
-    errors.price = "Le prix n'est pas valide ";
-  }
-  if (req.body.description.length < 10) {
-    hasErrors = true;
-    errors.description = "Il devrait y avoir au moins 10 caractères";
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).jsonp(errors);
   }
 
-  if (hasErrors) {
-    // return bas request 400 with validation errors
-    res.status(400).jsonp(errors);
-    return;
-  }
-
-  // Continue to JSON Server router
   next();
 });
 
-// Use default router
+// Utilise le routeur JSON Server
 server.use(router);
-server.listen(3004, () => {
-  console.log("JSON Server is running");
+
+const PORT = process.env.PORT || 3004;
+server.listen(PORT, () => {
+  console.log(`JSON Server is running on port ${PORT}`);
 });
