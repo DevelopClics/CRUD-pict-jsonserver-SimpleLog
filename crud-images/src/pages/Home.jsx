@@ -6,7 +6,11 @@ export default function Home() {
   const API_URL = import.meta.env.VITE_API_URL;
   console.log("API_URL =", API_URL); // Pour tester si elle est bien lue
   function getProducts() {
-    fetch(`${API_URL}/products?_sort=id&_order=desc`)
+    fetch(`${API_URL}/products?_sort=id&_order=desc`, {
+      method: "GET",
+      mode: "cors",
+      // credentials: "include",
+    })
       .then((response) => {
         if (response.ok) {
           return response.json();
