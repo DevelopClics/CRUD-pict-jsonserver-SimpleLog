@@ -159,7 +159,7 @@ export default function EditProduct() {
               <div className="row mb-3">
                 <div className="offset-sm-4  col-sm-8">
                   <img
-                    src={`${API_URL}images/` + initialData.imageFilename}
+                    src={`${API_URL}/images/` + initialData.imageFilename}
                     width="150"
                     alt="…"
                   />
