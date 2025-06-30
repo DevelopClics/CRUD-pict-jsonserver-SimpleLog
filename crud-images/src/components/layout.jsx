@@ -8,7 +8,7 @@ export function Navbar() {
   useEffect(() => {
     let username = sessionStorage.getItem("username");
     if (username === "" || username === null) {
-      usenavigate("/login");
+      usenavigate("/");
     }
   }, []);
 
