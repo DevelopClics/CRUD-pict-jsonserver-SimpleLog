@@ -1,21 +1,44 @@
 const jsonServer = require("json-server");
 const multer = require("multer");
+const cors = require("cors");
+const path = require("path");
 
 const server = jsonServer.create();
 const router = jsonServer.router("db.json");
 
-// Middleware JSON Server avec options CORS (remplace cors() séparé)
+const allowedOrigins = [
+  "https://developclics.github.io",
+  "http://localhost:5173",
+];
+
+// Middleware CORS configuré avant tout
+server.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        return callback(new Error("CORS origin not allowed"), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
+);
+
+// Middleware JSON Server par défaut, sans CORS intégré pour éviter conflit
 const middlewares = jsonServer.defaults({
   static: "public",
-  cors: {
-    origin: "https://developclics.github.io", // autorise ton front GitHub Pages
-    credentials: true,
-  },
+  noCors: true,
 });
 
 server.use(middlewares);
 
-// Multer setup pour upload d'images
+// *** AJOUTE ICI ton GET "/" ***
+server.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// ✅ Multer
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, "public/images");
@@ -29,9 +52,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 const bodyParser = upload.fields([{ name: "image", maxCount: 1 }]);
 
-// Validation produit (identique)
+// ✅ Validation produit
 function validateProduct(body) {
-  let errors = {};
+  const errors = {};
   if (!body.name || body.name.length < 2)
     errors.name = "Il devrait y avoir un minimum de 2 caractères";
   if (!body.brand || body.brand.length < 2)
@@ -45,40 +68,27 @@ function validateProduct(body) {
   return errors;
 }
 
-// POST /products
+// ✅ POST
 server.post("/products", bodyParser, (req, res, next) => {
-  if (!req.body) {
-    return res
-      .status(400)
-      .json({ error: "Corps de requête vide ou mal formé" });
-  }
+  if (!req.body) return res.status(400).json({ error: "Requête vide" });
 
   req.body.createdAt = new Date().toISOString();
-
-  if (req.files && req.files.image && req.files.image.length > 0) {
+  if (req.files?.image?.[0]) {
     req.body.imageFilename = req.files.image[0].filename;
   }
 
   req.body.price = Number(req.body.price);
-
   const errors = validateProduct(req.body);
-
-  if (Object.keys(errors).length > 0) {
-    return res.status(400).jsonp(errors);
-  }
+  if (Object.keys(errors).length > 0) return res.status(400).jsonp(errors);
 
   next();
 });
 
-// PATCH /products/:id
+// ✅ PATCH
 server.patch("/products/:id", bodyParser, (req, res, next) => {
-  if (!req.body) {
-    return res
-      .status(400)
-      .json({ error: "Corps de requête vide ou mal formé" });
-  }
+  if (!req.body) return res.status(400).json({ error: "Requête vide" });
 
-  if (req.files && req.files.image && req.files.image.length > 0) {
+  if (req.files?.image?.[0]) {
     req.body.imageFilename = req.files.image[0].filename;
   }
 
@@ -87,17 +97,15 @@ server.patch("/products/:id", bodyParser, (req, res, next) => {
   }
 
   const errors = validateProduct(req.body);
-
-  if (Object.keys(errors).length > 0) {
-    return res.status(400).jsonp(errors);
-  }
+  if (Object.keys(errors).length > 0) return res.status(400).jsonp(errors);
 
   next();
 });
 
-// Utilise le routeur JSON Server
+// ✅ Routeur json-server
 server.use(router);
 
+// ✅ Port Render
 const PORT = process.env.PORT || 3004;
 server.listen(PORT, () => {
   console.log(`JSON Server is running on port ${PORT}`);
