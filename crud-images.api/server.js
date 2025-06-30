@@ -1,6 +1,7 @@
 const jsonServer = require("json-server");
 const multer = require("multer");
 const cors = require("cors");
+
 const path = require("path");
 
 const server = jsonServer.create();
@@ -11,21 +12,19 @@ const allowedOrigins = [
   "http://localhost:5173",
 ];
 
-// Middleware CORS configuré avant tout
+// ✅ Middleware CORS (juste 1 seul bloc, pas doublé)
 server.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        return callback(new Error("CORS origin not allowed"), false);
-      }
-      return callback(null, true);
+      if (!origin) return callback(null, true); // permet Postman, etc.
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("CORS origin not allowed"), false);
     },
     credentials: true,
   })
 );
 
-// Middleware JSON Server par défaut, sans CORS intégré pour éviter conflit
+// ✅ Middleware json-server (avec CORS désactivé côté json-server)
 const middlewares = jsonServer.defaults({
   static: "public",
   noCors: true,
