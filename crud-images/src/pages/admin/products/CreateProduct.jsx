@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export default function CreateProduct() {
+  const { currentUser } = useAuth();
   const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate();
 
@@ -27,22 +29,19 @@ export default function CreateProduct() {
     }
 
     try {
-      const response = await fetch(
-        `${API_URL}/admin/products`,
-        // `http://localhost:3004/products`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${API_URL}/admin/products`, {
+        method: "POST",
+        headers: {
+          "X-User-Id": currentUser?.id || "",
+        },
+        body: formData,
+      });
 
       const data = await response.json();
 
       if (response.ok) {
-        //Product created correctly!
         navigate("/products");
       } else if (response.status === 400) {
-        // alert("Erreur lors de la validation");
         setValidationErrors(data);
       } else {
         alert("Impossible de créer le produit !");

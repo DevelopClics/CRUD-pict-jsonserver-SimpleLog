@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export default function EditProduct() {
+  const { currentUser } = useAuth();
   const params = useParams();
   const [initialData, setInitialData] = useState();
   const [validationErrors, setValidationErrors] = useState({});
@@ -45,22 +47,24 @@ export default function EditProduct() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/admin/products/` + params.id, {
+      const response = await fetch(`${API_URL}/admin/products/${params.id}`, {
         method: "PATCH",
+        headers: {
+          "X-User-Id": currentUser?.id || "",
+        },
         body: formData,
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        //Product created correctly!
+        // Produit modifié avec succès
         navigate("/products");
       } else if (response.status === 400) {
-        // alert("Erreur lors de la validation");
-
+        // Erreurs de validation (ex : champs invalides)
         setValidationErrors(data);
       } else {
-        alert("Impossible de mettre à jour le produit !");
+        alert("Impossible de modifier le produit !");
       }
     } catch (error) {
       alert("Impossible de se connecter au serveur !");
@@ -110,7 +114,11 @@ export default function EditProduct() {
               <div className="row mb-3">
                 <label className="col-sm-4 col-form-label">Catégorie</label>
                 <div className="col-sm-8">
-                  <select className="form-select" name="category">
+                  <select
+                    className="form-select"
+                    name="category"
+                    defaultValue={initialData.category}
+                  >
                     <option value="Other">Autre</option>
                     <option value="Animation">Animation</option>
                     <option value="Conciergerie">Conciergerie</option>
@@ -122,6 +130,7 @@ export default function EditProduct() {
                     </option>
                     <option value="Guinguette Mobile">Guinguette Mobile</option>
                   </select>
+
                   <span className="text-danger">
                     {validationErrors.category}
                   </span>
