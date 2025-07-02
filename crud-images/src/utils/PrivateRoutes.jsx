@@ -1,18 +1,10 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { getCurrentUser } from "../services/authService";
 
-const PrivateRoutes = () => {
-  let auth = { token: true };
-  return auth.token ? <Outlet /> : <Navigate to="/login" />;
-};
+function PrivateRoutes() {
+  const user = getCurrentUser();
+
+  return user?.id === "admin" ? <Outlet /> : <Navigate to="/login" />;
+}
 
 export default PrivateRoutes;
-
-// import { Navigate, Outlet } from "react-router-dom";
-
-// const PrivateRoutes = () => {
-//   const token = localStorage.getItem("token");
-
-//   return token ? <Outlet /> : <Navigate to="/login" />;
-// };
-
-// export default PrivateRoutes;

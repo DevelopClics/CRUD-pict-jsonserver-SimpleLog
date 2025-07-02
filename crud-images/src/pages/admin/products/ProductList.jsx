@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);
   const API_URL = import.meta.env.VITE_API_URL;
+  const { currentUser } = useAuth(); // ← Ici
+
   console.log("API_URL =", API_URL); // Pour tester si elle est bien lue
   function getProducts() {
     fetch(`${API_URL}/products?_sort=id&_order=desc`)
@@ -23,17 +26,29 @@ export default function ProductList() {
 
   useEffect(getProducts, []);
   function deleteProduct(id) {
-    fetch(`${API_URL}/products/` + id, {
+    console.log(
+      "Suppression produit id:",
+      id,
+      "currentUser id:",
+      currentUser?.id
+    );
+
+    fetch(`${API_URL}/admin/products/${id}`, {
       method: "DELETE",
+      headers: {
+        "X-User-Id": currentUser?.id || "",
+      },
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error();
+          console.log("Réponse non OK, status:", response.status);
+          throw new Error("Erreur suppression produit");
         }
         getProducts();
       })
       .catch((error) => {
         alert("Impossible de supprimer le produit !");
+        console.error(error);
       });
   }
 
@@ -47,36 +62,21 @@ export default function ProductList() {
             to="/products/create"
             role="button"
           >
-            Create Product
+            Créer le produit
           </Link>
-          <button
-            type="button"
-            className="btn btn-outline-primary"
-            onClick={getProducts}
-          >
-            Refresh
-          </button>
-          {/* <Link
-            style={{ float: "right" }}
-            className="btn btn-danger ms-1"
-            to="/login"
-            role="button"
-          >
-            Logout
-          </Link> */}
         </div>
         <div className="col"></div>
         <table className="table">
           <thead>
             <tr>
               <th>ID</th>
-              <th>Name</th>
-              <th>Brand</th>
+              <th>Nom</th>
+              <th>Marque</th>
               <th>Description</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Image</th>
-              <th>Created At</th>
+              <th>Catégorie</th>
+              <th>Prix</th>
+              <th>Visuel</th>
+              <th>Créé le</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -92,13 +92,19 @@ export default function ProductList() {
                   <td>{product.price}€</td>
 
                   <td>
-                    <img
-                      src={`${API_URL}/images/` + product.imageFilename}
-                      width="100"
-                      alt="..."
-                    />
+                    {product.imageFilename ? (
+                      <img
+                        src={`${API_URL}/images/${product.imageFilename}`}
+                        width="100"
+                        alt={product.name}
+                      />
+                    ) : (
+                      <span>No image</span>
+                    )}
                   </td>
-                  <td>{product.createdAt.slice(0, 10)}</td>
+                  <td>
+                    {product.createdAt ? product.createdAt.slice(0, 10) : "-"}
+                  </td>
                   {/* <td>{product.createdAt}</td> */}
 
                   <td style={{ width: "10px", whiteSpace: "nowrap" }}>
@@ -106,7 +112,7 @@ export default function ProductList() {
                       className="btn btn-primary btn-sm me-1"
                       to={"/products/edit/" + product.id}
                     >
-                      Edit
+                      Editer
                     </Link>
                     <button
                       type="button"
@@ -114,7 +120,7 @@ export default function ProductList() {
                       onClick={() => deleteProduct(product.id)}
                     >
                       {" "}
-                      Delete
+                      Supprimer
                     </button>
                   </td>
                 </tr>

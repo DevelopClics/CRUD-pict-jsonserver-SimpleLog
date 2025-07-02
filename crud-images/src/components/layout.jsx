@@ -1,18 +1,18 @@
-import { useEffect } from "react";
+// import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext.jsx";
 import logo from "../assets/logo-dedc-sm-dark.svg";
 
 export function Navbar() {
-  // DEBUT LOGOUT
-  const usenavigate = useNavigate();
-  useEffect(() => {
-    let username = sessionStorage.getItem("username");
-    if (username === "" || username === null) {
-      usenavigate("/");
-    }
-  }, []);
+  const { currentUser, logout } = useAuth();
+  console.log("Navbar user:", currentUser);
+  const navigate = useNavigate();
 
-  // FIN LOGOUT
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
+
   return (
     <nav className="navbar navbar-expand-lg bg-white border-bottom box-shadow">
       <div className="container">
@@ -48,7 +48,7 @@ export function Navbar() {
             <li className="nav-item dropdown">
               <a
                 className="nav-link dropdown-toggle text-dark"
-                to="/"
+                href="#!"
                 role="button"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
@@ -56,27 +56,31 @@ export function Navbar() {
                 Admin
               </a>
               <ul className="dropdown-menu">
-                <li>
-                  <Link className="dropdown-item" to="/login">
-                    Login
-                  </Link>
-                </li>
-                {/* <li>
-                  <hr className="dropdown-divider" />
-                </li> */}
-                {/* <li>
-                  <Link className="dropdown-item" to="/admin/products">
-                    Administation
-                  </Link>
-                </li> */}
-                <li>
-                  <hr className="dropdown-divider" />
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/login">
-                    Logout
-                  </Link>
-                </li>
+                {!currentUser && (
+                  <li>
+                    <Link className="dropdown-item" to="/login">
+                      Se connecter
+                    </Link>
+                  </li>
+                )}
+                {currentUser && (
+                  <>
+                    <li>
+                      <button
+                        className="dropdown-item"
+                        onClick={handleLogout}
+                        style={{
+                          cursor: "pointer",
+                          border: "none",
+                          background: "none",
+                          padding: 0,
+                        }}
+                      >
+                        Se décoonecter
+                      </button>
+                    </li>
+                  </>
+                )}
               </ul>
             </li>
           </ul>

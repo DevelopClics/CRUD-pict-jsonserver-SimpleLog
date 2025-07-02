@@ -45,7 +45,7 @@ export default function EditProduct() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/products/` + params.id, {
+      const response = await fetch(`${API_URL}/admin/products/` + params.id, {
         method: "PATCH",
         body: formData,
       });
@@ -110,17 +110,17 @@ export default function EditProduct() {
               <div className="row mb-3">
                 <label className="col-sm-4 col-form-label">Catégorie</label>
                 <div className="col-sm-8">
-                  <select
-                    className="form-select"
-                    name="category"
-                    defaultValue={initialData.category}
-                  >
+                  <select className="form-select" name="category">
                     <option value="Other">Autre</option>
-                    <option value="Phones">Téléphones</option>
-                    <option value="Computers">Ordinateurs</option>
-                    <option value="Accessories">Accessoires</option>
-                    <option value="Printers">Imprimantes</option>
-                    <option value="Cameras">Cameras</option>
+                    <option value="Animation">Animation</option>
+                    <option value="Conciergerie">Conciergerie</option>
+                    <option value="Location de vaisselle">
+                      Location de vaisselle
+                    </option>
+                    <option value="Logistique évènementielle">
+                      Logistique évènementielle
+                    </option>
+                    <option value="Guinguette Mobile">Guinguette Mobile</option>
                   </select>
                   <span className="text-danger">
                     {validationErrors.category}
@@ -128,7 +128,7 @@ export default function EditProduct() {
                 </div>
               </div>
               <div className="row mb-3">
-                <label className="col-sm-4 col-form-label">Price</label>
+                <label className="col-sm-4 col-form-label">Prix</label>
                 <div className="col-sm-8">
                   <input
                     className="form-control"
@@ -167,7 +167,7 @@ export default function EditProduct() {
               </div>
 
               <div className="row mb-3">
-                <label className="col-sm-4 col-form-label">created At</label>
+                <label className="col-sm-4 col-form-label">Créé le</label>
                 <div className="col-sm-8">
                   <input
                     readOnly

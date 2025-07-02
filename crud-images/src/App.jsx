@@ -1,10 +1,7 @@
-import { useState } from "react";
-
-// import "./App.css";
-import { Footer, Navbar } from "./components/layout";
 import { ToastContainer } from "react-toastify";
+import { Footer, Navbar } from "./components/layout";
 import Home from "./pages/Home";
-import { HashRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import ProductList from "./pages/admin/products/ProductList";
@@ -16,25 +13,20 @@ import PrivateRoutes from "./utils/PrivateRoutes";
 function App() {
   return (
     <>
-      <ToastContainer theme="colored"></ToastContainer>
-      <HashRouter>
-        <Navbar />
-        <Routes>
-          <Route element={<PrivateRoutes />}>
-            <Route path="/products" element={<ProductList />} />
-            <Route path="/products/create" element={<CreateProduct />} />
-            <Route path="/products/edit/:id" element={<EditProduct />} />
-          </Route>
-          <Route path="/" exact element={<Home />} />
-          <Route path="/login" element={<Login />} />
-
-          <Route path="/contact" element={<Contact />} />
-
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-
-        <Footer />
-      </HashRouter>
+      <ToastContainer theme="colored" />
+      <Navbar />
+      <Routes>
+        <Route element={<PrivateRoutes />}>
+          <Route path="/products" element={<ProductList />} />
+          <Route path="/products/create" element={<CreateProduct />} />
+          <Route path="/products/edit/:id" element={<EditProduct />} />
+        </Route>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Footer />
     </>
   );
 }

@@ -28,7 +28,7 @@ export default function CreateProduct() {
 
     try {
       const response = await fetch(
-        `${API_URL}/products`,
+        `${API_URL}/admin/products`,
         // `http://localhost:3004/products`,
         {
           method: "POST",
@@ -78,17 +78,21 @@ export default function CreateProduct() {
               <div className="col-sm-8">
                 <select className="form-select" name="category">
                   <option value="Other">Autre</option>
-                  <option value="Phones">Téléphones</option>
-                  <option value="Computers">Ordinateurs</option>
-                  <option value="Accessories">Accessoires</option>
-                  <option value="Printers">Imprimantes</option>
-                  <option value="Cameras">Cameras</option>
+                  <option value="Animation">Animation</option>
+                  <option value="Conciergerie">Conciergerie</option>
+                  <option value="Location de vaisselle">
+                    Location de vaisselle
+                  </option>
+                  <option value="Logistique évènementielle">
+                    Logistique évènementielle
+                  </option>
+                  <option value="Guinguette Mobile">Guinguette Mobile</option>
                 </select>
                 <span className="text-danger">{validationErrors.category}</span>
               </div>
             </div>
             <div className="row mb-3">
-              <label className="col-sm-4 col-form-label">Price</label>
+              <label className="col-sm-4 col-form-label">Prix</label>
               <div className="col-sm-8">
                 <input
                   className="form-control"
