@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Content Security Policy to réduire les risques XSS -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+      default-src 'self';
+      script-src 'self' https://cdn.jsdelivr.net;
+      style-src  'self' https://cdn.jsdelivr.net 'unsafe-inline';
+      img-src 'self' https://crud-images-api.onrender.com data:;
+      font-src 'self' https://cdn.jsdelivr.net;
+      connect-src 'self' https://crud-images-api.onrender.com;
+      base-uri 'self';
+      form-action 'self';
+    "
+    />
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo-dedc-sm-dark.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
