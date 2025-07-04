@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
+import { deleteProduct as deleteProductService } from "../../../services/productService";
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);
@@ -33,23 +34,9 @@ export default function ProductList() {
       currentUser?.id
     );
 
-    fetch(`${API_URL}/admin/products/${id}`, {
-      method: "DELETE",
-      headers: {
-        "X-User-Id": currentUser?.id || "",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          console.log("Réponse non OK, status:", response.status);
-          throw new Error("Erreur suppression produit");
-        }
-        getProducts();
-      })
-      .catch((error) => {
-        alert("Impossible de supprimer le produit !");
-        console.error(error);
-      });
+    deleteProductService(id)
+      .then(() => getProducts())
+      .catch(() => alert("Impossible de supprimer le produit !"));
   }
 
   return (

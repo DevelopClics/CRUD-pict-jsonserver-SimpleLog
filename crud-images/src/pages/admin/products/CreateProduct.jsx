@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
+import { createProduct as createProductService } from "../../../services/productService";
 
 export default function CreateProduct() {
   const { currentUser } = useAuth();
@@ -29,25 +30,14 @@ export default function CreateProduct() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/admin/products`, {
-        method: "POST",
-        headers: {
-          "X-User-Id": currentUser?.id || "",
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        navigate("/products");
-      } else if (response.status === 400) {
-        setValidationErrors(data);
+      await createProductService(formData);
+      navigate("/products");
+    } catch (err) {
+      if (err && typeof err === "object") {
+        setValidationErrors(err);
       } else {
         alert("Impossible de créer le produit !");
       }
-    } catch (error) {
-      alert("Impossible de se connecter au serveur !");
     }
   }
   return (

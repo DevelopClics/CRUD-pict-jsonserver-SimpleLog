@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
+import { updateProduct as updateProductService } from "../../../services/productService";
 
 export default function EditProduct() {
   const { currentUser } = useAuth();
@@ -47,27 +48,11 @@ export default function EditProduct() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/admin/products/${params.id}`, {
-        method: "PATCH",
-        headers: {
-          "X-User-Id": currentUser?.id || "",
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Produit modifié avec succès
-        navigate("/products");
-      } else if (response.status === 400) {
-        // Erreurs de validation (ex : champs invalides)
-        setValidationErrors(data);
-      } else {
-        alert("Impossible de modifier le produit !");
-      }
-    } catch (error) {
-      alert("Impossible de se connecter au serveur !");
+      await updateProductService(params.id, formData);
+      navigate("/products");
+    } catch (err) {
+      if (err && typeof err === "object") setValidationErrors(err);
+      else alert("Impossible de modifier le produit !");
     }
   }
   return (
