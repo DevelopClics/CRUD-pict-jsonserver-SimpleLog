@@ -83,7 +83,10 @@ server.post("/login", (req, res) => {
   if (!user) return res.status(401).json({ message: "Identifiants invalides" });
 
   // Vérifie le mot de passe avec bcrypt
-  // console.log("Body:", req.body);
+  // DEBUG ─────────────
+  console.log("LOGIN body:", req.body);
+  console.log("Hash en base:", user.password);
+  // ───────────────────
   const ok = bcrypt.compareSync(password, user.password);
   if (!ok) return res.status(401).json({ message: "Identifiants invalides" });
 
