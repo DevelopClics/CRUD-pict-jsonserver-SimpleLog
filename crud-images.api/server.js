@@ -3,6 +3,12 @@ const multer = require("multer");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret123";
+const refreshTokens = [];
 
 const server = jsonServer.create();
 const router = jsonServer.router("db.json");
@@ -29,6 +35,26 @@ const readDb = () => JSON.parse(fs.readFileSync("db.json", "utf-8"));
 const writeDb = (data) =>
   fs.writeFileSync("db.json", JSON.stringify(data, null, 2));
 
+// Vérifie et met à jour les utilisateurs (hash + rôle) au démarrage
+function ensureUsersSecure() {
+  const db = readDb();
+  let modified = false;
+  db.user.forEach((u) => {
+    // Ajout rôle
+    if (!u.role) {
+      u.role = u.id === "admin" ? "admin" : "user";
+      modified = true;
+    }
+    // Hachage si pas déjà fait (bcrypt hash commence par "$2")
+    if (!u.password.startsWith("$2")) {
+      u.password = bcrypt.hashSync(u.password, 10);
+      modified = true;
+    }
+  });
+  if (modified) writeDb(db);
+}
+ensureUsersSecure();
+
 // Middleware Body Parser (json-server)
 server.use(jsonServer.bodyParser);
 
@@ -41,28 +67,59 @@ server.use(
       return callback(new Error("CORS origin not allowed"), false);
     },
     credentials: true,
-    allowedHeaders: ["Content-Type", "X-User-Id"], // <-- Ajouté pour autoriser ce header custom
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 server.options("*", cors());
 
-// LOGIN
+// LOGIN (avec génération JWT)
 server.post("/login", (req, res) => {
   const { id, password } = req.body;
   const db = readDb();
-  const user = db.user.find((u) => u.id === id && u.password === password);
+  const user = db.user.find((u) => u.id === id);
 
-  if (user) {
-    currentUser = { id: user.id, name: user.name };
-    res.json({ message: "Connecté", user: currentUser });
-  } else {
-    res.status(401).json({ message: "Identifiants invalides" });
-  }
+  if (!user) return res.status(401).json({ message: "Identifiants invalides" });
+
+  // Vérifie le mot de passe avec bcrypt
+  console.log("Body:", req.body);
+  const ok = bcrypt.compareSync(password, user.password);
+  if (!ok) return res.status(401).json({ message: "Identifiants invalides" });
+
+  const payload = { id: user.id, role: user.role };
+  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+  const refreshToken = crypto.randomUUID();
+  refreshTokens.push({ token: refreshToken, userId: user.id });
+
+  return res.json({
+    user: { id: user.id, name: user.name },
+    accessToken,
+    refreshToken,
+    expiresIn: 3600,
+  });
+});
+
+// REFRESH token
+server.post("/refresh", (req, res) => {
+  const { refreshToken } = req.body;
+  const entry = refreshTokens.find((t) => t.token === refreshToken);
+  if (!entry)
+    return res.status(401).json({ message: "Refresh token invalide" });
+
+  const dbRef = readDb();
+  const user = dbRef.user.find((u) => u.id === entry.userId);
+  const payload = { id: entry.userId, role: user ? user.role : "user" };
+  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+  return res.json({ accessToken, expiresIn: 3600 });
 });
 
 // LOGOUT
 server.post("/logout", (req, res) => {
-  currentUser = null;
+  // Optionnel : retirer refreshToken de la liste
+  const { refreshToken } = req.body || {};
+  if (refreshToken) {
+    const idx = refreshTokens.findIndex((t) => t.token === refreshToken);
+    if (idx !== -1) refreshTokens.splice(idx, 1);
+  }
   res.json({ message: "Déconnecté" });
 });
 
@@ -107,38 +164,54 @@ function validateProduct(body) {
   return errors;
 }
 
-// Middleware pour routes admin : check si admin connecté
-const checkAdmin = (req, res, next) => {
-  const userId = req.get("X-User-Id")?.trim();
-  console.log("checkAdmin - userId header:", userId);
+// Middleware JWT
+function authenticate(req, res, next) {
+  const auth = req.get("Authorization") || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+  if (!token) return res.status(401).json({ message: "Token manquant" });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Token invalide" });
+  }
+}
 
-  if (userId !== "admin") {
+function checkAdmin(req, res, next) {
+  if (req.user?.role !== "admin") {
     return res.status(403).json({ message: "Accès refusé - admin uniquement" });
   }
-  console.log("Accès autorisé - admin confirmé");
   next();
-};
+}
 // Middleware création produit admin
-server.post("/admin/products", checkAdmin, bodyParser, (req, res, next) => {
-  req.body.createdAt = new Date().toISOString();
+server.post(
+  "/admin/products",
+  authenticate,
+  checkAdmin,
+  bodyParser,
+  (req, res, next) => {
+    req.body.createdAt = new Date().toISOString();
 
-  if (req.files?.image?.[0]) {
-    req.body.imageFilename = req.files.image[0].filename;
+    if (req.files?.image?.[0]) {
+      req.body.imageFilename = req.files.image[0].filename;
+    }
+
+    req.body.price = Number(req.body.price);
+
+    const errors = validateProduct(req.body);
+    if (Object.keys(errors).length > 0) return res.status(400).jsonp(errors);
+
+    // Redirige vers la route json-server standard /products (POST)
+    req.url = "/products";
+    next();
   }
-
-  req.body.price = Number(req.body.price);
-
-  const errors = validateProduct(req.body);
-  if (Object.keys(errors).length > 0) return res.status(400).jsonp(errors);
-
-  // Redirige vers la route json-server standard /products (POST)
-  req.url = "/products";
-  next();
-});
+);
 
 // Middleware modification produit admin
 server.patch(
   "/admin/products/:id",
+  authenticate,
   checkAdmin,
   bodyParser,
   (req, res, next) => {
@@ -164,7 +237,7 @@ server.patch(
 //   next();
 // });
 
-server.delete("/admin/products/:id", checkAdmin, (req, res) => {
+server.delete("/admin/products/:id", authenticate, checkAdmin, (req, res) => {
   const id = Number(req.params.id);
   const db = router.db; // accès low-level à la db json-server
 
