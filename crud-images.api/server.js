@@ -21,9 +21,11 @@ const allowedOrigins = [
 // Middleware global pour logger toutes les requêtes et leurs headers
 server.use((req, res, next) => {
   console.log(`Requête reçue : ${req.method} ${req.url}`);
-  console.log("Headers:", req.headers);
+  // console.log("Headers:", req.headers);
 
-  console.log(`Requête ${req.method} ${req.url} - Headers:`, req.headers);
+  // console.log(`Requête ${req.method} ${req.url} - Headers:`, req.headers);
+  // On peut garder ce log minimal si besoin :
+  // console.log(`Requête ${req.method} ${req.url}`);
   next();
 });
 
@@ -81,7 +83,7 @@ server.post("/login", (req, res) => {
   if (!user) return res.status(401).json({ message: "Identifiants invalides" });
 
   // Vérifie le mot de passe avec bcrypt
-  console.log("Body:", req.body);
+  // console.log("Body:", req.body);
   const ok = bcrypt.compareSync(password, user.password);
   if (!ok) return res.status(401).json({ message: "Identifiants invalides" });
 
