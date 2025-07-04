@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Content Security Policy to réduire les risques XSS -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; 
+    connect-src 'self' https://crud-images-api.onrender.com;
+    img-src    'self' data: https://crud-images-api.onrender.com;
+
+    script-src 'self' https://cdn.jsdelivr.net; 
+    style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; 
+    img-src 'self' data:;"
+    />
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo-dedc-sm-dark.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,7 +27,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
     />
-    <script type="module" crossorigin src="/CRUD-pict-jsonserver-SimpleLog/assets/index-t54hlf6P.js"></script>
+    <script type="module" crossorigin src="/CRUD-pict-jsonserver-SimpleLog/assets/index-oqOhkXhr.js"></script>
   </head>
   <body>
     <div id="root"></div>
