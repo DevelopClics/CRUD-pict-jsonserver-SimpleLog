@@ -3,7 +3,7 @@
     {
       "id": "admin",
       "name": "Julien",
-      "password": "$2a$10$YnMJR9SsdbFpPhZ1B9gZ8.4Cp8z8ylMNxHOvZjQdHoV41caZ.N72W",
+      "password": "12345Abc",
       "role": "admin"
     }
   ],
