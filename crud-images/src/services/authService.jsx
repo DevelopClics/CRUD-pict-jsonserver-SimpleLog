@@ -25,10 +25,12 @@ export async function login(id, password) {
 }
 
 export async function logout() {
+  const refreshToken = localStorage.getItem(REFRESH_KEY);
   try {
     await fetch(`${API_URL}/logout`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${getAccessToken()}` },
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
     });
   } catch (err) {
     // ignore network errors during logout
