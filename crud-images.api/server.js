@@ -21,11 +21,9 @@ const allowedOrigins = [
 // Middleware global pour logger toutes les requêtes et leurs headers
 server.use((req, res, next) => {
   console.log(`Requête reçue : ${req.method} ${req.url}`);
-  // console.log("Headers:", req.headers);
+  console.log("Headers:", req.headers);
 
-  // console.log(`Requête ${req.method} ${req.url} - Headers:`, req.headers);
-  // On peut garder ce log minimal si besoin :
-  // console.log(`Requête ${req.method} ${req.url}`);
+  console.log(`Requête ${req.method} ${req.url} - Headers:`, req.headers);
   next();
 });
 
@@ -76,41 +74,33 @@ server.options("*", cors());
 
 // LOGIN (avec génération JWT)
 server.post("/login", (req, res) => {
-  const { id, password } = req.body;
+    const { id, password } = req.body;
   const db = readDb();
   const user = db.user.find((u) => u.id === id);
 
   if (!user) return res.status(401).json({ message: "Identifiants invalides" });
 
   // Vérifie le mot de passe avec bcrypt
-  // DEBUG ─────────────
-  console.log("LOGIN body:", req.body);
-  console.log("Hash en base:", user.password);
-  // ───────────────────
   const ok = bcrypt.compareSync(password, user.password);
-  if (!ok) return res.status(401).json({ message: "Identifiants invalides" });
+  if (!ok)
+    return res.status(401).json({ message: "Identifiants invalides" });
 
   const payload = { id: user.id, role: user.role };
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
   const refreshToken = crypto.randomUUID();
   refreshTokens.push({ token: refreshToken, userId: user.id });
 
-  return res.json({
-    user: { id: user.id, name: user.name },
-    accessToken,
-    refreshToken,
-    expiresIn: 3600,
-  });
+  return res.json({ user: { id: user.id, name: user.name }, accessToken, refreshToken, expiresIn: 3600 });
+    
 });
 
 // REFRESH token
 server.post("/refresh", (req, res) => {
   const { refreshToken } = req.body;
   const entry = refreshTokens.find((t) => t.token === refreshToken);
-  if (!entry)
-    return res.status(401).json({ message: "Refresh token invalide" });
+  if (!entry) return res.status(401).json({ message: "Refresh token invalide" });
 
-  const dbRef = readDb();
+    const dbRef = readDb();
   const user = dbRef.user.find((u) => u.id === entry.userId);
   const payload = { id: entry.userId, role: user ? user.role : "user" };
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
@@ -119,13 +109,14 @@ server.post("/refresh", (req, res) => {
 
 // LOGOUT
 server.post("/logout", (req, res) => {
-  // Optionnel : retirer refreshToken de la liste
-  const { refreshToken } = req.body || {};
+  const { refreshToken } = req.body;
   if (refreshToken) {
-    const idx = refreshTokens.findIndex((t) => t.token === refreshToken);
-    if (idx !== -1) refreshTokens.splice(idx, 1);
+    const index = refreshTokens.findIndex((t) => t.token === refreshToken);
+    if (index !== -1) {
+      refreshTokens.splice(index, 1);
+    }
   }
-  res.json({ message: "Déconnecté" });
+  res.status(200).json({ message: "Déconnecté avec succès" });
 });
 
 // Middleware json-server avec options (static: public, noCors: true car CORS géré avant)
@@ -184,34 +175,28 @@ function authenticate(req, res, next) {
 }
 
 function checkAdmin(req, res, next) {
-  if (req.user?.role !== "admin") {
+    if (req.user?.role !== "admin") {
     return res.status(403).json({ message: "Accès refusé - admin uniquement" });
   }
   next();
-}
+};
 // Middleware création produit admin
-server.post(
-  "/admin/products",
-  authenticate,
-  checkAdmin,
-  bodyParser,
-  (req, res, next) => {
-    req.body.createdAt = new Date().toISOString();
+server.post("/admin/products", authenticate, checkAdmin, bodyParser, (req, res, next) => {
+  req.body.createdAt = new Date().toISOString();
 
-    if (req.files?.image?.[0]) {
-      req.body.imageFilename = req.files.image[0].filename;
-    }
-
-    req.body.price = Number(req.body.price);
-
-    const errors = validateProduct(req.body);
-    if (Object.keys(errors).length > 0) return res.status(400).jsonp(errors);
-
-    // Redirige vers la route json-server standard /products (POST)
-    req.url = "/products";
-    next();
+  if (req.files?.image?.[0]) {
+    req.body.imageFilename = req.files.image[0].filename;
   }
-);
+
+  req.body.price = Number(req.body.price);
+
+  const errors = validateProduct(req.body);
+  if (Object.keys(errors).length > 0) return res.status(400).jsonp(errors);
+
+  // Redirige vers la route json-server standard /products (POST)
+  req.url = "/products";
+  next();
+});
 
 // Middleware modification produit admin
 server.patch(

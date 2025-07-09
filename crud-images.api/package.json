@@ -9,6 +9,8 @@
   "dependencies": {
     "cors": "^2.8.5",
     "json-server": "^0.17.4",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
     "multer": "^2.0.1"
   },
   "engines": {
